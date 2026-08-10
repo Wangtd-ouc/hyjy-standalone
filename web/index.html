@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会议纪要助手</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e3e6eb;
+      --primary: #2f6fed;
+      --primary-hover: #2459c4;
+      --text: #1f2329;
+      --muted: #6b7280;
+      --error: #d93848;
+      --ok: #2e9e5b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .toolbar { display: flex; align-items: center; gap: 10px; }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn:hover { background: #f0f2f5; }
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .btn.primary:hover { background: var(--primary-hover); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 28px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      min-height: 70vh;
+    }
+    .panel h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    textarea {
+      flex: 1;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: none;
+      font-family: inherit;
+      background: #fafbfc;
+    }
+    textarea:focus { outline: 2px solid var(--primary); background: #fff; }
+    .output {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      background: #fafbfc;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    .output:empty::before {
+      content: "生成结果将显示在这里…";
+      color: var(--muted);
+    }
+    .output h1, .output h2, .output h3 { margin: 12px 0 6px; }
+    .output h1:first-child, .output h2:first-child { margin-top: 0; }
+    .output ul, .output ol { padding-left: 22px; margin: 6px 0; }
+    .output p { margin: 6px 0; }
+    .output code { background: #eef1f5; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+    .output blockquote { border-left: 3px solid var(--border); padding-left: 10px; color: var(--muted); }
+    .status { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; }
+    .status.error { color: var(--error); }
+    .status.ok { color: var(--ok); }
+    .actions { display: flex; gap: 10px; margin-top: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .row label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .row input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .session-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      color: var(--muted);
+      background: #f0f2f5;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .panel { min-height: 45vh; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>会议纪要助手</h1>
+      <div class="sub">DeepSeek 模型 · Tavily 联网搜索 · 会话记忆本地存储</div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btn-new">新会话</button>
+      <button class="btn" id="btn-copy">复制结果</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="panel">
+      <h2>会议记录原文</h2>
+      <textarea id="input" placeholder="在此粘贴会议记录原文，例如：&#10;&#10;会议主题：ABC 电商平台 CDN 接入方案讨论&#10;时间：2025年1月15日 14:00-15:00&#10;参会方：网宿科技（李四-架构师、王五-产品经理）；ABC 电商（张三-技术负责人）&#10;&#10;……"></textarea>
+      <div class="row" style="margin-top:12px">
+        <label>会话 ID</label>
+        <input id="session" placeholder="自动生成，用于记住上下文">
+        <span class="session-tag" id="session-tag"></span>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btn-send">生成会议纪要</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>会议纪要输出</h2>
+      <div class="output" id="output"></div>
+    </div>
+  </div>
+
+  <script src="/marked.min.js"></script>
+  <script>
+    (function () {
+      const inputEl = document.getElementById("input");
+      const outputEl = document.getElementById("output");
+      const statusEl = document.getElementById("status");
+      const sessionEl = document.getElementById("session");
+      const sessionTag = document.getElementById("session-tag");
+      const sendBtn = document.getElementById("btn-send");
+      const copyBtn = document.getElementById("btn-copy");
+      const newBtn = document.getElementById("btn-new");
+
+      let sessionId = localStorage.getItem("hyjy_session") || "";
+      if (!sessionId) {
+        sessionId = crypto.randomUUID().replace(/-/g, "");
+        localStorage.setItem("hyjy_session", sessionId);
+      }
+      sessionEl.value = sessionId;
+      sessionTag.textContent = sessionId.slice(0, 8) + "…";
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg;
+        statusEl.className = "status" + (kind ? " " + kind : "");
+      }
+
+      async function send() {
+        const text = inputEl.value.trim();
+        if (!text) {
+          setStatus("请先粘贴会议记录原文", "error");
+          return;
+        }
+        sessionId = sessionEl.value.trim() || sessionId;
+        localStorage.setItem("hyjy_session", sessionId);
+        sessionTag.textContent = sessionId.slice(0, 8) + "…";
+
+        outputEl.textContent = "";
+        setStatus("正在生成纪要（模型可能需要联网搜索背景资料）…");
+        sendBtn.disabled = true;
+
+        try {
+          const resp = await fetch("/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session_id: sessionId,
+              stream: true,
+              messages: [{ role: "user", content: text }]
+            })
+          });
+          if (!resp.ok) {
+            let detail = resp.statusText;
+            try { detail = (await resp.json()).detail || detail; } catch (e) {}
+            throw new Error("HTTP " + resp.status + ": " + detail);
+          }
+
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let content = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed.startsWith("data:")) continue;
+              const data = trimmed.slice(5).trim();
+              if (data === "[DONE]") continue;
+              try {
+                const obj = JSON.parse(data);
+                const delta = obj.choices && obj.choices[0] && obj.choices[0].delta;
+                if (delta && delta.content) {
+                  content += delta.content;
+                  outputEl.innerHTML = marked.parse(content);
+                  outputEl.scrollTop = outputEl.scrollHeight;
+                }
+              } catch (e) { /* 忽略无法解析的行 */ }
+            }
+          }
+
+          if (!content) {
+            setStatus("未生成内容，请检查服务日志", "error");
+          } else {
+            setStatus("生成完成。可点击「复制结果」或「新会话」重新开始。", "ok");
+          }
+        } catch (e) {
+          console.error(e);
+          setStatus("生成失败：" + e.message, "error");
+        } finally {
+          sendBtn.disabled = false;
+        }
+      }
+
+      sendBtn.addEventListener("click", send);
+      inputEl.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") send();
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        const text = outputEl.innerText;
+        if (!text) { setStatus("暂无可复制的内容", "error"); return; }
+        await navigator.clipboard.writeText(text);
+        setStatus("已复制到剪贴板", "ok");
+      });
+
+      newBtn.addEventListener("click", () => {
+        sessionId = crypto.randomUUID().replace(/-/g, "");
+        sessionEl.value = sessionId;
+        localStorage.setItem("hyjy_session", sessionId);
+        sessionTag.textContent = sessionId.slice(0, 8) + "…";
+        outputEl.textContent = "";
+        setStatus("已开启新会话（新的记忆上下文）");
+      });
+    })();
+  </script>
+</body>
+</html>
