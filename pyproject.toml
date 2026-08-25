@@ -1,7 +1,7 @@
 [project]
 name = "hyjy-standalone"
 version = "1.0.0"
-description = "会议纪要助手 Agent 独立部署版（DeepSeek + Tavily，脱离豆包/Coze）"
+description = "会议纪要助手 Agent 独立部署版（DeepSeek + Tavily）"
 requires-python = ">=3.12"
 dependencies = [
     "aiosqlite==0.22.1",

@@ -1,6 +1,6 @@
 # 会议纪要助手（独立部署版）
 
-专业处理会议记录，输出严谨、完善、可直接流转的中文会议纪要。本版本已**脱离豆包大模型与 Coze 平台**，模型使用 DeepSeek，联网搜索使用 Tavily，会话记忆使用本地 SQLite，全部能力可独立部署。
+专业处理会议记录，输出严谨、完善、可直接流转的中文会议纪要。模型使用 DeepSeek，联网搜索使用 Tavily，会话记忆使用本地 SQLite，全部能力可独立部署。
 
 ## 能力
 
@@ -11,19 +11,19 @@
 - **内置 Web 界面**：无需额外前端，浏览器打开即用
 - **文件解析工具**：内置 PDF / Word / Excel / PPT 文本提取模块（供后续扩展附件处理）
 
-## 与原豆包/Coze 版的差异
+## 技术特点
 
-| 能力 | 原版 | 本版 |
-|---|---|---|
-| 大模型 | 豆包 doubao-seed-2-0-lite（Coze 网关） | DeepSeek `deepseek-v4-flash`（OpenAI 兼容接口直连） |
-| 联网搜索 | Coze `SearchClient` | Tavily API（`include_domains` 实现站点限定） |
-| 会话记忆 | PostgreSQL（Coze 提供） | 本地 SQLite 文件 |
-| 密钥/环境 | Coze Workload Identity | 本地 `.env` |
-| 遥测 | cozeloop → Coze Loop | 移除（标准日志） |
-| 文件存储 | Coze 代理 S3 | 移除（本地化） |
-| 部署平台 | Coze Coding 沙箱 | 任意 Python 3.12+ 环境 |
+| 能力 | 实现 |
+|---|---|
+| 大模型 | DeepSeek `deepseek-v4-flash`（OpenAI 兼容接口直连） |
+| 联网搜索 | Tavily API（`include_domains` 实现站点限定） |
+| 会话记忆 | 本地 SQLite 文件（重启不丢） |
+| 密钥/环境 | 本地 `.env` |
+| 日志 | 标准日志，无外部上报 |
+| 文件存储 | 本地化，无外部存储依赖 |
+| 部署 | 任意 Python 3.12+ 环境 |
 
-系统提示词（`config/agent_llm_config.json`）与业务逻辑保持原样。
+系统提示词（`config/agent_llm_config.json`）是业务规则核心，集中管理。
 
 > 想深入了解内部架构、运行逻辑与设计特点，见 [ARCHITECTURE.md](./ARCHITECTURE.md)（架构详解）。
 
@@ -62,7 +62,7 @@ bash scripts/http_run.sh
 
 ## 使用方式
 
-独立部署后没有 Coze 的输入输出界面，有以下几种用法：
+独立部署后没有平台自带的输入输出界面，有以下几种用法：
 
 ### 方式一：内置 Web 界面（推荐，零配置）
 

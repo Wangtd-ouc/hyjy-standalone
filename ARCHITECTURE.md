@@ -98,7 +98,7 @@ flowchart LR
   4. 下一步计划（行动项 → 负责人 → 截止日期 → 优先级）
 - **写作准则**：不得虚构、不输出思考过程、官网与外部来源冲突时以官网为准、文末附参考来源
 
-这套提示词是原 Coze/豆包版原样迁移的，业务规则零改动。
+这套提示词是项目的业务核心，定义了完整的处理规则。
 
 ### 3.2 联网搜索（Tavily）
 
@@ -109,7 +109,7 @@ flowchart LR
 | `web_search` | `query` | Tavily 通用搜索，`search_depth=advanced`、`max_results=10`、`include_answer=True` | 客户/项目背景、行业、竞品 |
 | `web_search_sites` | `query, sites` | 把逗号分隔的域名映射为 Tavily `include_domains` | 核对网宿官网（`sites=wangsu.com`） |
 
-返回格式与原 Coze 版保持一致：**AI 摘要 + 编号结果列表（标题/来源/URL/摘要/发布时间）**。Tavily 的 `answer` 字段替代了原 Coze 搜索 API 的 `summary`，站点限定由 `include_domains` 实现，功能等价。
+返回格式统一为：**AI 摘要 + 编号结果列表（标题/来源/URL/摘要/发布时间）**。AI 摘要由 Tavily 的 `answer` 字段提供，站点限定由 `include_domains` 实现。
 
 ### 3.3 会话记忆（SQLite）
 
@@ -255,7 +255,7 @@ sequenceDiagram
 
 ### 5.1 本地优先，零平台绑定
 
-除模型与搜索两个必用的云端 API 外，一切本地化：记忆用 SQLite 文件、前端静态托管、无任何 Coze/豆包 SDK 依赖、无遥测上报。可整体打包到任意内网/私有环境，只放行 `api.deepseek.com` 与 `api.tavily.com` 两个出口即可。
+除模型与搜索两个必用的云端 API 外，一切本地化：记忆用 SQLite 文件、前端静态托管、无任何平台 SDK 依赖、无遥测上报。可整体打包到任意内网/私有环境，只放行 `api.deepseek.com` 与 `api.tavily.com` 两个出口即可。
 
 ### 5.2 OpenAI 兼容即生态
 

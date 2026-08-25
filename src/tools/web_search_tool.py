@@ -1,6 +1,6 @@
 """
 网页搜索工具（Tavily），用于会议纪要助手的背景信息补充和产品信息核对。
-替代原 Coze SearchClient：Tavily 支持 include_domains（站点限定）与 AI 摘要（answer）。
+Tavily 支持 include_domains（站点限定）与 AI 摘要（answer）。
 """
 import os
 from urllib.parse import urlparse
@@ -23,7 +23,7 @@ def _tavily_search(query: str, include_domains=None, max_results: int = DEFAULT_
         "query": query,
         "search_depth": "advanced",
         "max_results": max_results,
-        "include_answer": True,  # Tavily 服务端生成的 AI 摘要，替代原 Coze summary
+        "include_answer": True,  # Tavily 服务端生成的 AI 摘要
         "include_raw_content": False,
     }
     if include_domains:
